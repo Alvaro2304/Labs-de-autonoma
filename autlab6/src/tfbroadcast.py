@@ -1,7 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+import numpy as np
 import rospy
 import tf
+from geometry_msgs.msg import Vector3
+from sensor_msgs.msg import Imu
+
 
 # Nombre del nodo
 rospy.init_node('ejemplo_tf_broadcaster')
@@ -16,7 +20,7 @@ x = 1.0; y = 1.0; theta = 3.1415/4.0
 rate = rospy.Rate(10)
 while not rospy.is_shutdown():
     # Incremento de la posicion/orientacion
-    x = x + 0.02
+    x = 
     y = y + 0.01
     theta = theta + 0.01
     # Hacer broadcast del tf: 'base_footprint' con respecto a 'odom'

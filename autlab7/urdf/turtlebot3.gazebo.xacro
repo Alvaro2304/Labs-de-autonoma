@@ -59,7 +59,7 @@
   </gazebo>
 
   <gazebo>
-    <plugin name="turtlebot3_waffle_pi_controller" filename="libgazebo_ros_diff_drive.so">
+    <plugin name="turtlebot3_waffle_pi_controller" filename=" ">
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>

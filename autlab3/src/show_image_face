@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+#   Este nodo se suscribe a una imagen de ROS, la convierte en una matriz de
+#   OpenCV y la muestra en pantalla
+import rospy
+import cv2
+import numpy as np
+from std_msgs.msg import Int32
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+
+
+class Cam(object):
+  def __init__(self, topic_name="camera_frame"):
+    self.bridge = CvBridge()
+    self.image = np.zeros((10,10))
+    isub = rospy.Subscriber(topic_name, Image, self.image_callback)
+
+  def image_callback(self, img):
+    self.image = self.bridge.imgmsg_to_cv2(img, "bgr8")
+
+  def get_image(self):
+    return self.image
+
+
+if __name__ == '__main__':
+
+  # Inicializar el nodo de ROS
+  rospy.init_node('camera_node')
+
+  # Objeto que se suscribe al tópico de la cámara
+  topic_name = "/camera/rgb/image_raw"
+  cam = Cam(topic_name)
+
+  # Tópico para publicar una imagen de salida
+  topic_pub = 'image_out'
+  pubimg = rospy.Publisher(topic_pub, Image, queue_size=10)
+  person = rospy.Publisher('persona', Int32, queue_size=10)
+  flag=0
+  # Frecuencia del bucle principal
+  freq = 10
+  rate = rospy.Rate(freq)
+  # Bucle principal
+  while not rospy.is_shutdown():
+    
+    # Obtener la imagen del tópico de ROS en formato de OpenCV
+    I = cam.get_image()
+    face_cascade = cv2.CascadeClassifier('haarcascade_upperbody.xml')
+    var=Int32()
+    var.data=flag
+    rospy.loginfo(str(var.data))
+    
+    # Realizar algún tipo de procesamiento sobre la imagen
+    if I.ndim==3:
+      #gray = cv2.cvtColor(I, cv2.COLOR_BGR2GRAY)
+      faces = face_cascade.detectMultiScale(I)
+      print(faces)
+      if len(faces)!=0:
+        x=faces[0][0]
+        y=faces[0][1]
+        w=faces[0][2]
+        h=faces[0][3]
+        cv2.rectangle(I,(x,y),(x+w,y+h),(255,255,255),3)
+        flag=1
+      else:
+        flag=0
+      cv2.imshow("GAA", I)
+    else:
+      pass
+    person.publish(var)
+      
+    # Mostrar la imagen
+    #cv2.imshow("Imagen Camara Turtlebot3", I)
+    
+
+    # Esperar al bucle para actualizar
+    cv2.waitKey(1)
+    # Opcional: publicar la imagen de salida como tópico de ROS
+    #pubimg.publish(cam.bridge.cv2_to_imgmsg(I))
+    rate.sleep()
+
+cv2.destroyAllWindows()

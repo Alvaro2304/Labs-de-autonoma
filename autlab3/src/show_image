@@ -42,13 +42,35 @@ if __name__ == '__main__':
     
     # Obtener la imagen del tópico de ROS en formato de OpenCV
     I = cam.get_image()
-    
     # Realizar algún tipo de procesamiento sobre la imagen
-    
+    if I.ndim==3:
+      hsv=cv2.cvtColor(I,cv2.COLOR_BGR2HSV)
+      #cv2.imshow("HSV",hsv)
+      lower = np.array([160,100,20])
+      upper = np.array([179,255,255])
+
+      mask = cv2.inRange(hsv, lower, upper)
+      kernel = np.ones((5,5),np.uint8)
+      mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+      mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+      #cv2.imshow("MASK",mask)
+      cont,_=cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+      #cont_img=cv2.drawContours(I,cont,-1,255,3)
+      #cv2.imshow("Bordes",cont_img)
+      if len(cont)>0:
+        c=max(cont,key=cv2.contourArea,default=0)
+        x,y,h,w=cv2.boundingRect(c)
+        cv2.rectangle(I,(x,y),(x+w,y+w),(0,255,0),1)
+      cv2.imshow("GAA", I)
+      # segmented_img = cv2.bitwise_and(I, I, mask=mask)
+      # cv2.imshow("Segmented_image",segmented_img)
+    else:
+      pass
     
       
     # Mostrar la imagen
-    cv2.imshow("Imagen Camara Turtlebot3", I)
+    #cv2.imshow("Imagen Camara Turtlebot3", I)
+    
 
     # Esperar al bucle para actualizar
     cv2.waitKey(1)
